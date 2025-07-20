@@ -51,7 +51,7 @@ Sample environment configuration files are provided as `.env.example` in both `f
 
 Copy them to `.env` and adjust values if needed before running:
 
-````bash
+```bash
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
@@ -61,4 +61,3 @@ cp frontend/.env.example frontend/.env
 ```bash
 npm run dev
 ```
-````
