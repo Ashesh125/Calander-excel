@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import ExcelJS from 'exceljs';
 import { saveCalendarJson } from './helpers/file-hepler';
+import path from "path";
+import fs from "fs";
 
 const app = express();
 
@@ -67,8 +69,7 @@ app.post('/api/export-tasks', async (req, res) => {
     worksheet.addRow([]);
 
     let task_array = buildTaskCalendar(currentYear, currentMonth + 1, tasks);
-    console.log(task_array);
-    saveCalendarJson(task_array, currentYear, currentMonth + 1);
+    saveCalendarJson(tasks, currentYear, currentMonth + 1);
 
     task_array.forEach((row) => {
       const excelRow = worksheet.addRow(row);
@@ -191,5 +192,60 @@ function buildTaskCalendar(year: number, month: number, tasks: Task[]): string[]
 
   return finalCalendar;
 }
+
+app.get('/api/data/:year', async (req, res) => {
+  try {
+    const year = req.params.year;
+    const page = parseInt(req.query.page as string) || 1;
+    const perPage = parseInt(req.query.perPage as string) || 10;
+
+    const dataDir = path.join(__dirname, '../data');
+    const files = fs.readdirSync(dataDir);
+    const yearFiles = files.filter(file => file.startsWith(`${year}-`) && file.endsWith('.json'));
+    const availableYears = new Set<string>();
+    const availableMonths: number[] = [];
+
+    for (const file of files) {
+      const match = file.match(/^(\d{4})-(\d{1,2})\.json$/);
+      if (match) {
+        const [_, fileYear, fileMonth] = match;
+        availableYears.add(fileYear);
+        if (fileYear === year) {
+          availableMonths.push(parseInt(fileMonth));
+        }
+      }
+    }
+
+    res.json({
+      year,
+      availableYears: Array.from(availableYears).sort(),
+      availableMonths: availableMonths.sort((a, b) => a - b)
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Error reading data', details: err.message });
+  }
+});
+
+app.get('/api/data/:year/:month', (req, res) => {
+  const { year, month } = req.params;
+
+  const dataDir = path.join(__dirname, '../data');
+  const filename = `${year}-${parseInt(month)}.json`;
+  const filePath = path.join(dataDir, filename);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ tasks: [], message: 'Data file not found' });
+  }
+
+  try {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const tasks = JSON.parse(content);
+
+    return res.json({ tasks });
+  } catch (err: any) {
+    return res.status(500).json({ tasks: [], message: err.message });
+  }
+});
+
 
 
