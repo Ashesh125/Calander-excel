@@ -1,12 +1,13 @@
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import {useContext, useRef, useCallback} from "react";
-import type {DateClickArg, EventDropArg} from "@fullcalendar/core";
-import {TaskContext} from "../../context/TaskContext";
+import { useContext, useRef, useCallback, useEffect } from "react";
+import type { DateClickArg, EventDropArg } from "@fullcalendar/core";
+import { TaskContext } from "../../context/TaskContext";
+import axios from "axios";
 
 const Calendar = () => {
-    const {tasks, setTasks} = useContext(TaskContext);
+    const { tasks, setTasks } = useContext(TaskContext);
     const calendarRef = useRef<FullCalendar>(null);
 
     const handleDateClick = useCallback(
@@ -28,7 +29,7 @@ const Calendar = () => {
 
     const handleEventDrop = useCallback(
         (arg: EventDropArg) => {
-            const {event, oldEvent} = arg;
+            const { event, oldEvent } = arg;
             const newDate = new Date(event.startStr);
             const oldDate = new Date(oldEvent.startStr);
 
@@ -44,7 +45,7 @@ const Calendar = () => {
             setTasks((prevTasks) =>
                 prevTasks.map((task) =>
                     task.id === Number(event.id)
-                        ? {...task, date: event.startStr}
+                        ? { ...task, date: event.startStr }
                         : task
                 )
             );
@@ -52,6 +53,24 @@ const Calendar = () => {
         [setTasks]
     );
 
+    useEffect(() => {
+        const pathParts = window.location.pathname.split("/").filter(Boolean);
+        const [year, month] = pathParts;
+
+        if (year && month) {
+            const url = `http://localhost:4000/api/data/${year}/${month}`;
+            axios
+                .get(url)
+                .then((response) => {
+                    if (Array.isArray(response.data.tasks.calendar)) {
+                        setTasks(response.data.tasks.calendar);
+                    }
+                })
+                .catch((err) => {
+                    console.error("Failed to fetch tasks:", err.message);
+                });
+        }
+    }, [setTasks]);
 
     // @ts-ignore
     return (

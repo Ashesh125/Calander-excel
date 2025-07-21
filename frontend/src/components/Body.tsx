@@ -1,24 +1,30 @@
-// src/components/Body.tsx
 import React from "react";
-import { Home } from "lucide-react";
 import Calendar from "./Calendar";
+import ListComponent from "./ListComponent";
 
 type BodyProps = {
   activeSection: string;
 };
 
 const Body: React.FC<BodyProps> = ({ activeSection }) => {
+
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+  const isYearMonth =
+      pathParts.length === 2 &&
+      /^\d{4}$/.test(pathParts[0]) &&
+      /^\d{1,2}$/.test(pathParts[1]);
+
+  const sectionToRender = isYearMonth ? "Calendar" : activeSection;
+
   return (
     <div className="text-xl font-semibold">
-      {activeSection === "Dashboard" && (
-        <p>
-          <Home></Home> Dashboard Content
-        </p>
+      {sectionToRender === "Dashboard" && (
+        <ListComponent></ListComponent>
       )}
-      {activeSection === "Calendar" && <Calendar />}
-      {activeSection === "Settings" && <p>⚙️ Settings Content</p>}
-      {!["Dashboard", "Calendar", "Settings"].includes(activeSection) && (
-        <p>no contetnt on {activeSection}</p>
+      {sectionToRender === "Calendar" && <Calendar />}
+      {sectionToRender === "Settings" && <p>⚙️ Settings Content</p>}
+      {!["Dashboard", "Calendar", "Settings"].includes(sectionToRender) && (
+        <p>no contetnt on {sectionToRender}</p>
       )}
     </div>
   );

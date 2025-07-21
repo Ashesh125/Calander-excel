@@ -72,15 +72,6 @@ const TaskSidebar: React.FC = () => {
     };
 
     const groupedTasks = tasks
-        .filter((task) => {
-            if (!task?.date) return false;
-            const taskDate = new Date(task.date);
-            const currentDate = new Date();
-            return (
-                taskDate.getMonth() === currentDate.getMonth() &&
-                taskDate.getFullYear() === currentDate.getFullYear()
-            );
-        })
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .reduce((acc, task) => {
             const date = new Date(task.date).toDateString();

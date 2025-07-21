@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useState, useEffect, type ReactNode } from "react";
 
 interface Task {
   id: number;
@@ -20,7 +20,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const tasksData = [];
+  const tasksData: React.SetStateAction<Task[]> = [];
 
   useEffect(() => {
     setTasks(tasksData);
